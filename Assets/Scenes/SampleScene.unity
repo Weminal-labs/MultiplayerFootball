@@ -205,7 +205,31 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 132226273}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1204460682}
+        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+        m_MethodName: SetActive
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
+        m_CallState: 2
+      - m_Target: {fileID: 849959869}
+        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+        m_MethodName: SetActive
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &132226273
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1409,10 +1433,22 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: RoomManager, Assembly-CSharp
-        m_MethodName: JoinRoomButtonPress
-        m_Mode: 1
+      - m_Target: {fileID: 303816277}
+        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+        m_MethodName: SetActive
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
+        m_CallState: 2
+      - m_Target: {fileID: 428732953}
+        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+        m_MethodName: SetActive
+        m_Mode: 6
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -3935,7 +3971,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1624036264}
   - component: {fileID: 1624036266}
-  - component: {fileID: 1624036265}
   m_Layer: 0
   m_Name: RoomCam
   m_TagString: Untagged
@@ -3960,14 +3995,6 @@ Transform:
   - {fileID: 968176481}
   m_Father: {fileID: 303816279}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!81 &1624036265
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1624036263}
-  m_Enabled: 1
 --- !u!20 &1624036266
 Camera:
   m_ObjectHideFlags: 0
@@ -4318,7 +4345,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1854634765}
   - component: {fileID: 1854634767}
-  - component: {fileID: 1854634766}
   m_Layer: 0
   m_Name: RoomCam
   m_TagString: Untagged
@@ -4343,14 +4369,6 @@ Transform:
   - {fileID: 849959870}
   m_Father: {fileID: 428732955}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!81 &1854634766
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1854634764}
-  m_Enabled: 1
 --- !u!20 &1854634767
 Camera:
   m_ObjectHideFlags: 0

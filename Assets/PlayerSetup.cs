@@ -6,7 +6,7 @@ public class PlayerSetup : MonoBehaviour
 {
     public Movement movement;
 
-    public GameObject camera;
+    //public GameObject camera;
 
     public GameObject playerTag;
 
@@ -14,28 +14,30 @@ public class PlayerSetup : MonoBehaviour
 
     public TextMeshPro nicknameText;
 
-    public Transform tpweaponholder;
+    //public Transform tpweaponholder;
 
-    public Transform weaponHolder;
+    //public Transform weaponHolder;
 
     public void isLocalPlayer()
     {
-        tpweaponholder.gameObject.SetActive(false);
+        //tpweaponholder.gameObject.SetActive(false);
         movement.enabled = true;
-        camera.SetActive(true);
+        //camera.SetActive(true);
         playerTag.SetActive(false);
     }
 
-    [PunRPC]
-    public void setTPWeapon(int _weaponIndex)
-    {
-        foreach (Transform _child in tpweaponholder)
-        {
-            _child.gameObject.SetActive(false);
-        }
 
-        tpweaponholder.GetChild(_weaponIndex).gameObject.SetActive(true);
-    }
+    //This maybe usse for player number
+    /*    [PunRPC]
+        public void setTPWeapon(int _weaponIndex)
+        {
+            foreach (Transform _child in tpweaponholder)
+            {
+                _child.gameObject.SetActive(false);
+            }
+
+            tpweaponholder.GetChild(_weaponIndex).gameObject.SetActive(true);
+        }*/
 
     [PunRPC]
     public void SetName(string _name)

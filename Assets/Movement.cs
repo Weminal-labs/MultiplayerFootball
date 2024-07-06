@@ -5,8 +5,6 @@ public class Movement : MonoBehaviour
     public GameObject capsule; // Assign your capsule prefab in the inspector
     public float shootPower = 0.001f; // Adjust the shooting power as needed
 
-    public Camera Cam; // Assign your camera in the inspector
-
     private Vector3 dragStartPos;
 
     void Update()
