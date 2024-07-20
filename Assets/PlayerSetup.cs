@@ -2,42 +2,35 @@ using Photon.Pun;
 using TMPro;
 using UnityEngine;
 
-public class PlayerSetup : MonoBehaviour
+public class PlayerSetup : MonoBehaviourPun
 {
-    public Movement movement;
-
-    //public GameObject camera;
-
     public GameObject playerTag;
-
     public string nickname;
-
     public TextMeshPro nicknameText;
+    private int role;
+    public Animator animator;
+    private PhotonAnimatorView photonAnimatorView;
 
-    //public Transform tpweaponholder;
+    void Start()
+    {
+        animator = GetComponent<Animator>();
+        photonAnimatorView = GetComponent<PhotonAnimatorView>();
 
-    //public Transform weaponHolder;
+        if (photonView.IsMine)
+        {
+            photonAnimatorView.enabled = true;
+        }
+        else
+        {
+            photonAnimatorView.enabled = false;
+        }
+    }
 
     public void isLocalPlayer()
     {
-        //tpweaponholder.gameObject.SetActive(false);
-        movement.enabled = true;
-        //camera.SetActive(true);
         playerTag.SetActive(false);
+        print(GetRole());
     }
-
-
-    //This maybe usse for player number
-    /*    [PunRPC]
-        public void setTPWeapon(int _weaponIndex)
-        {
-            foreach (Transform _child in tpweaponholder)
-            {
-                _child.gameObject.SetActive(false);
-            }
-
-            tpweaponholder.GetChild(_weaponIndex).gameObject.SetActive(true);
-        }*/
 
     [PunRPC]
     public void SetName(string _name)
@@ -46,5 +39,40 @@ public class PlayerSetup : MonoBehaviour
         nicknameText.text = nickname;
     }
 
+    [PunRPC]
+    public void SetRole(int _role)
+    {
+        role = _role;
+        Debug.Log("Role set to: " + role); // Debug log to check the role
+        // Play the appropriate animation based on the role
+        PlayIdleAnimation();
+    }
 
+    private void PlayIdleAnimation()
+    {
+        if (animator != null)
+        {
+            if (role == PlayerRoles.RoleOne)
+            {
+                animator.SetBool("isGoal", false); // Assuming PlayerIdle is default
+            }
+            else if (role == PlayerRoles.RoleTwo)
+            {
+                animator.SetBool("isGoal", true);
+            }
+            else
+            {
+                Debug.LogError("Invalid role: " + role); // Debug log for invalid role
+            }
+        }
+        else
+        {
+            Debug.LogError("Animator not found!"); // Debug log for missing animator
+        }
+    }
+
+    public int GetRole()
+    {
+        return role;
+    }
 }
