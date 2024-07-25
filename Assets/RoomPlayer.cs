@@ -13,12 +13,17 @@ public class RoomPlayer : MonoBehaviourPunCallbacks
 
     public GameObject connectingScreen;
     public GameObject roomListScreen;
+    public GameObject roomManagerGameObject;
 
     private void Awake()
     {
         Instance = this;
-    }
 
+#if !UNITY_EDITOR && UNITY_WEBGL
+WebGLInput.captureAllKeyboardInput = false;
+#endif
+
+    }
 
 
     // Start is called before the first frame update
@@ -43,14 +48,14 @@ public class RoomPlayer : MonoBehaviourPunCallbacks
 
         Debug.Log("Connected to master server.");
 
-        roomListScreen.SetActive(true);
+        //roomListScreen.SetActive(true);
         connectingScreen.SetActive(false);
 
         PhotonNetwork.JoinLobby();
     }
 
 
-    private void JoinOrCreateRoom(string json)
+    public void JoinOrCreateRoom(string json)
     {
 
         MyAPIData data = JsonConvert.DeserializeObject<MyAPIData>(json);
@@ -58,6 +63,8 @@ public class RoomPlayer : MonoBehaviourPunCallbacks
         RoomManager.instance.ChangeNickname(data.userName);
 
         PhotonNetwork.JoinOrCreateRoom(data.roomId, new RoomOptions { MaxPlayers = 2 }, TypedLobby.Default);
+        roomManagerGameObject.SetActive(true);
+        gameObject.SetActive(false);
     }
 
 }

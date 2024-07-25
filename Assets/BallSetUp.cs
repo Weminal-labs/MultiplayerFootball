@@ -1,13 +1,17 @@
-using Photon.Pun;
 using UnityEngine;
 
 public class BallSetUp : MonoBehaviour
 {
+    Animator animatior;
 
+    private void Start()
+    {
+        animatior = GetComponent<Animator>();
+    }
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("BlueGoal"))
+        /*if (other.CompareTag("BlueGoal"))
         {
             Debug.Log("Blue Team Scores!");
 
@@ -19,7 +23,9 @@ public class BallSetUp : MonoBehaviour
             Debug.Log("Red Team Scores!");
 
             PhotonNetwork.Destroy(gameObject);
-        }
+        }*/
+        Debug.Log("Blue Team Scores!");
+
 
     }
 

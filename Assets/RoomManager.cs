@@ -1,5 +1,6 @@
 using Photon.Pun;
 using Photon.Realtime;
+using System.Collections;
 using UnityEngine;
 using Hashtable = ExitGames.Client.Photon.Hashtable;
 
@@ -42,6 +43,11 @@ public class RoomManager : MonoBehaviourPunCallbacks
         instance = this;
     }
 
+    private void Start()
+    {
+        PhotonNetwork.UseRpcMonoBehaviourCache = true;
+    }
+
     public void ChangeNickname(string _name)
     {
         nickname = _name;
@@ -68,21 +74,10 @@ public class RoomManager : MonoBehaviourPunCallbacks
     void AssignRole()
     {
         // Determine role based on the number of players already in the room
-        int currentPlayerCount = PhotonNetwork.CurrentRoom.PlayerCount;
-        if (currentPlayerCount == 1)
-        {
-            role = PlayerRoles.RoleOne; // Player
-        }
-        else if (currentPlayerCount == 2)
-        {
-            role = PlayerRoles.RoleTwo; // Goalkeeper
-        }
+        role = PhotonNetwork.CurrentRoom.PlayerCount;
 
         // Set the role in player's custom properties
-        Hashtable hash = new Hashtable();
-        hash["role"] = role;
-
-        PhotonNetwork.LocalPlayer.SetCustomProperties(hash);
+        UpdatePlayerProperty("role", role);
     }
 
     public void Respawn()
@@ -93,10 +88,11 @@ public class RoomManager : MonoBehaviourPunCallbacks
         }
 
         localPlayerObject = PhotonNetwork.Instantiate(playerPrefab.name, spawnPointsTeamTwo[role - 1].position, Quaternion.identity);
-        PlayerSetup playerSetup = localPlayerObject.GetComponent<PlayerSetup>();
+        var playerSetup = localPlayerObject.GetComponent<PlayerSetup>();
 
         playerSetup.GetComponent<PhotonView>().RPC("SetName", RpcTarget.AllBuffered, nickname);
         playerSetup.GetComponent<PhotonView>().RPC("SetRole", RpcTarget.AllBuffered, role);
+
         playerSetup.isLocalPlayer();
 
         // Rotate the goalkeeper by 180 degrees on the y-axis
@@ -119,7 +115,8 @@ public class RoomManager : MonoBehaviourPunCallbacks
         Debug.Log(index);
         playerChoice = index;
         photonView.RPC("ReceiveChoice", RpcTarget.Others, index);
-        CheckWinner();
+
+        StartCoroutine(CheckWinner());
     }
 
     [PunRPC]
@@ -127,14 +124,13 @@ public class RoomManager : MonoBehaviourPunCallbacks
     {
         Debug.Log(index);
         opponentChoice = index;
-        CheckWinner();
+        StartCoroutine(CheckWinner());
     }
 
-    void CheckWinner()
+    IEnumerator CheckWinner()
     {
         if (playerChoice != -1 && opponentChoice != -1)
         {
-            // Determine roles
             bool isGoalkeeper = role == PlayerRoles.RoleTwo;
             bool opponentIsGoalkeeper = !isGoalkeeper;
 
@@ -142,6 +138,7 @@ public class RoomManager : MonoBehaviourPunCallbacks
             {
                 Debug.Log("Goalkeeper wins!");
                 UpdateScore(isGoalkeeper ? PlayerRoles.RoleTwo : PlayerRoles.RoleOne);
+                localPlayerObject.GetComponent<PlayerSetup>().isWin();
             }
             else
             {
@@ -149,60 +146,81 @@ public class RoomManager : MonoBehaviourPunCallbacks
                 UpdateScore(isGoalkeeper ? PlayerRoles.RoleOne : PlayerRoles.RoleTwo);
             }
 
-            // Reset choices for next round
+            TriggerAnimations();
+            yield return new WaitForSeconds(4f);
+
             playerChoice = -1;
             opponentChoice = -1;
 
-            // Increment the round
             currentRound++;
+
             if (currentRound >= maxRounds)
             {
                 Debug.Log("Round Over");
                 SwapRoles();
-                Respawn();
-                currentRound = 0; // Reset round count for the next set
+                currentRound = 0;
             }
+            Respawn();
+        }
+    }
+
+    void TriggerAnimations()
+    {
+        if (localPlayerObject != null)
+        {
+            double animationStartTime = PhotonNetwork.Time + 0.1f;
+
+            localPlayerObject.GetComponent<PlayerSetup>().GetComponent<PhotonView>().RPC("TriggerPenaltyKickAnimation", RpcTarget.All, playerChoice, animationStartTime);
         }
     }
 
     void UpdateScore(int scoringRole)
     {
-        foreach (Player player in PhotonNetwork.PlayerList)
+        foreach (var player in PhotonNetwork.PlayerList)
         {
             int playerRole = (int)player.CustomProperties["role"];
             if (playerRole == scoringRole)
             {
                 int currentScore = player.CustomProperties.ContainsKey("score") ? (int)player.CustomProperties["score"] : 0;
-                Hashtable hash = new Hashtable();
-                hash["score"] = currentScore + 1;
-                player.SetCustomProperties(hash);
-                Debug.Log($"{player.NickName} score: {hash["score"]}");
+                UpdatePlayerProperty(player, "score", currentScore + 1);
             }
         }
     }
 
     void SwapRoles()
     {
-        foreach (Player player in PhotonNetwork.PlayerList)
+        foreach (var player in PhotonNetwork.PlayerList)
         {
             int currentRole = (int)player.CustomProperties["role"];
             int newRole = currentRole == PlayerRoles.RoleOne ? PlayerRoles.RoleTwo : PlayerRoles.RoleOne;
-
-            Hashtable hash = new Hashtable();
-            hash["role"] = newRole;
-            player.SetCustomProperties(hash);
+            UpdatePlayerProperty(player, "role", newRole);
         }
     }
 
     void DisplayFinalScore()
     {
-        foreach (Player player in PhotonNetwork.PlayerList)
+        foreach (var player in PhotonNetwork.PlayerList)
         {
             int score = player.CustomProperties.ContainsKey("score") ? (int)player.CustomProperties["score"] : 0;
             Debug.Log($"{player.NickName} final score: {score}");
         }
     }
+
+    void UpdatePlayerProperty(string key, object value)
+    {
+        Hashtable hash = new Hashtable();
+        hash[key] = value;
+        PhotonNetwork.LocalPlayer.SetCustomProperties(hash);
+    }
+
+    void UpdatePlayerProperty(Player player, string key, object value)
+    {
+        Hashtable hash = new Hashtable();
+        hash[key] = value;
+        player.SetCustomProperties(hash);
+    }
 }
+
 
 public static class PlayerRoles
 {
