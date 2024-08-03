@@ -1,8 +1,13 @@
+using Aptos.Accounts;
+using Aptos.BCS;
+using Aptos.Unity.Rest;
 using Photon.Pun;
 using Photon.Realtime;
 using System.Collections;
+using System.Linq;
 using UnityEngine;
 using Hashtable = ExitGames.Client.Photon.Hashtable;
+
 
 public class RoomManager : MonoBehaviourPunCallbacks
 {
@@ -34,19 +39,30 @@ public class RoomManager : MonoBehaviourPunCallbacks
     private int opponentChoice = -1;
 
     private int currentRound = 0;
+    private int allRound = 0;
+
     private const int maxRounds = 5;
 
     private GameObject localPlayerObject;
 
+
+    public GameObject scoreboardManager;
+
     void Awake()
     {
         instance = this;
+#if !UNITY_EDITOR && UNITY_WEBGL
+WebGLInput.captureAllKeyboardInput = false;
+
+#endif
+
+        PhotonNetwork.UseRpcMonoBehaviourCache = true;
+
+        PhotonNetwork.PhotonServerSettings.AppSettings.NetworkLogging = ExitGames.Client.Photon.DebugLevel.ALL;
+        PhotonNetwork.NetworkingClient.LoadBalancingPeer.DisconnectTimeout = 12000000; // 12000 seconds
+        PhotonNetwork.KeepAliveInBackground = 12000000;
     }
 
-    private void Start()
-    {
-        PhotonNetwork.UseRpcMonoBehaviourCache = true;
-    }
 
     public void ChangeNickname(string _name)
     {
@@ -69,15 +85,21 @@ public class RoomManager : MonoBehaviourPunCallbacks
 
         AssignRole();
         Respawn();
+        scoreboardManager.SetActive(true);
+        //scoreboardManager.GetComponent<ScoreboardManager>().UpdateName();
+        scoreboardManager.GetComponent<ScoreboardManager>().CallUpdateScores();
+
     }
 
     void AssignRole()
     {
         // Determine role based on the number of players already in the room
         role = PhotonNetwork.CurrentRoom.PlayerCount;
+        int[] turnScores = new int[maxRounds];
 
-        // Set the role in player's custom properties
-        UpdatePlayerProperty("role", role);
+        PhotonNetwork.LocalPlayer.SetCustomProperties(new Hashtable { { "userAdress", RoomPlayer.Instance.userAdress } });
+
+        PhotonNetwork.LocalPlayer.SetCustomProperties(new Hashtable { { "turnScores", turnScores } });
     }
 
     public void Respawn()
@@ -87,11 +109,12 @@ public class RoomManager : MonoBehaviourPunCallbacks
             PhotonNetwork.Destroy(localPlayerObject);
         }
 
+
         localPlayerObject = PhotonNetwork.Instantiate(playerPrefab.name, spawnPointsTeamTwo[role - 1].position, Quaternion.identity);
         var playerSetup = localPlayerObject.GetComponent<PlayerSetup>();
 
         playerSetup.GetComponent<PhotonView>().RPC("SetName", RpcTarget.AllBuffered, nickname);
-        playerSetup.GetComponent<PhotonView>().RPC("SetRole", RpcTarget.AllBuffered, role);
+        playerSetup.GetComponent<PhotonView>().RPC("SetRole", RpcTarget.AllBufferedViaServer, role);
 
         playerSetup.isLocalPlayer();
 
@@ -99,6 +122,7 @@ public class RoomManager : MonoBehaviourPunCallbacks
         if (role == PlayerRoles.RoleTwo)
         {
             localPlayerObject.transform.Rotate(0, 180, 0);
+            playerSetup.ui.transform.Rotate(0, 0, 180);
         }
 
         PhotonNetwork.LocalPlayer.NickName = nickname;
@@ -134,93 +158,170 @@ public class RoomManager : MonoBehaviourPunCallbacks
             bool isGoalkeeper = role == PlayerRoles.RoleTwo;
             bool opponentIsGoalkeeper = !isGoalkeeper;
 
-            if ((isGoalkeeper && playerChoice == opponentChoice) || (opponentIsGoalkeeper && playerChoice != opponentChoice))
+            if (!isGoalkeeper && playerChoice != opponentChoice)
             {
-                Debug.Log("Goalkeeper wins!");
-                UpdateScore(isGoalkeeper ? PlayerRoles.RoleTwo : PlayerRoles.RoleOne);
-                localPlayerObject.GetComponent<PlayerSetup>().isWin();
+                // Player scores a goal
+                UpdateScore(1, currentRound);
             }
-            else
+            if (!isGoalkeeper && playerChoice == opponentChoice)
             {
-                Debug.Log("Goalkeeper loses!");
-                UpdateScore(isGoalkeeper ? PlayerRoles.RoleOne : PlayerRoles.RoleTwo);
+                // Player scores a goal
+                UpdateScore(-1, currentRound);
             }
 
+
+
             TriggerAnimations();
-            yield return new WaitForSeconds(4f);
+            yield return new WaitForSeconds(3.5f);
 
             playerChoice = -1;
             opponentChoice = -1;
 
             currentRound++;
+            allRound++;
+
+            if (allRound >= 2 * maxRounds)
+            {
+                DetermineWinnerAndSendAddress();
+                Application.Quit();
+            }
 
             if (currentRound >= maxRounds)
             {
                 Debug.Log("Round Over");
-                SwapRoles();
                 currentRound = 0;
+                DisplayFinalScore();
+                SwapRoles();
             }
+
             Respawn();
+
+
         }
     }
 
+    void OnApplicationQuit()
+    {
+
+        // Send a message to React when the application quits
+        Application.ExternalCall("onUnityApplicationQuit");
+    }
     void TriggerAnimations()
     {
         if (localPlayerObject != null)
         {
-            double animationStartTime = PhotonNetwork.Time + 0.1f;
+            double animationStartTime = PhotonNetwork.Time + 0.2f;
 
-            localPlayerObject.GetComponent<PlayerSetup>().GetComponent<PhotonView>().RPC("TriggerPenaltyKickAnimation", RpcTarget.All, playerChoice, animationStartTime);
+            localPlayerObject.GetComponent<PlayerSetup>().GetComponent<PhotonView>().RPC("TriggerPenaltyKickAnimation", RpcTarget.AllBufferedViaServer, playerChoice, opponentChoice, animationStartTime);
         }
     }
 
-    void UpdateScore(int scoringRole)
+    void UpdateScore(int result, int round)
     {
         foreach (var player in PhotonNetwork.PlayerList)
         {
-            int playerRole = (int)player.CustomProperties["role"];
-            if (playerRole == scoringRole)
+            var playerSetup = player.TagObject as PlayerSetup;
+            if (playerSetup != null && playerSetup.GetRole() == PlayerRoles.RoleOne)
             {
-                int currentScore = player.CustomProperties.ContainsKey("score") ? (int)player.CustomProperties["score"] : 0;
-                UpdatePlayerProperty(player, "score", currentScore + 1);
+                int[] turnScores = (int[])player.CustomProperties["turnScores"];
+                turnScores[round] = result;
+                player.SetCustomProperties(new Hashtable { { "turnScores", turnScores } });
             }
         }
+        scoreboardManager.GetComponent<ScoreboardManager>().CallUpdateScores();
     }
 
     void SwapRoles()
     {
         foreach (var player in PhotonNetwork.PlayerList)
         {
-            int currentRole = (int)player.CustomProperties["role"];
-            int newRole = currentRole == PlayerRoles.RoleOne ? PlayerRoles.RoleTwo : PlayerRoles.RoleOne;
-            UpdatePlayerProperty(player, "role", newRole);
+            var playerSetup = player.TagObject as PlayerSetup;
+            if (playerSetup != null)
+            {
+                int currentRole = playerSetup.GetRole();
+                int newRole = currentRole == PlayerRoles.RoleOne ? PlayerRoles.RoleTwo : PlayerRoles.RoleOne;
+                //playerSetup.photonView.RPC("SetRole", RpcTarget.AllBufferedViaServer, newRole);
+                role = newRole;
+            }
         }
     }
+
+
 
     void DisplayFinalScore()
     {
         foreach (var player in PhotonNetwork.PlayerList)
         {
-            int score = player.CustomProperties.ContainsKey("score") ? (int)player.CustomProperties["score"] : 0;
-            Debug.Log($"{player.NickName} final score: {score}");
+            int[] turnScores = (int[])player.CustomProperties["turnScores"];
+
+            var playerSetup = player.TagObject as PlayerSetup;
+            if (playerSetup != null)
+            {
+                Debug.Log($"{player.NickName} turn scores: {string.Join(", ", turnScores)}");
+            }
         }
     }
 
-    void UpdatePlayerProperty(string key, object value)
+    IEnumerator SetNet()
     {
-        Hashtable hash = new Hashtable();
-        hash[key] = value;
-        PhotonNetwork.LocalPlayer.SetCustomProperties(hash);
+        RestClient restClient = RestClient.Instance.SetEndPoint(Constants.TESTNET_BASE_URL);
+        Coroutine restClientSetupCor = StartCoroutine(RestClient.Instance.SetUp());
+        yield return restClientSetupCor;
+
+        AptosTokenClient tokenClient = AptosTokenClient.Instance.SetUp(restClient);
     }
 
-    void UpdatePlayerProperty(Player player, string key, object value)
+    public void CheckWallet(string winnerAddress)
     {
-        Hashtable hash = new Hashtable();
-        hash[key] = value;
-        player.SetCustomProperties(hash);
+        StartCoroutine(SetNet());
+
+        // Initialize Account Using Hexadecimal Private Key.
+        /*        const string PrivateKeyHex = "0xee87f9f47a79a0ccc9ab0f31a18a60e96e1de7ee4ed6f6a54081930a54916a45";
+                Account bob = Account.LoadKey(PrivateKeyHex);
+
+                print("BOB Account Address: " + bob.AccountAddress);*/
+
+        ISerializable[] transactionArguments ={
+        new U64((ulong)RoomPlayer.Instance.roomId),
+        new BString(winnerAddress),
+    };
+
+        // Initialize the Payload.
+        EntryFunction payload = EntryFunction.Natural(
+            new ModuleId(AccountAddress.FromHex("4dc362f62787da9c0655223fe2819fbac878345cbc5115674e89326e20a42ed7"), "gamev3"), // Package ID and Module Name.
+            "pick_winner_and_transfer_bet", // Function Name.
+            new TagSequence(new ISerializableTag[0]), // Type Arguments.
+            new Sequence(transactionArguments) // Arguments.
+        );
+    }
+
+
+    // Determine winner after all rounds are complete
+    private void DetermineWinnerAndSendAddress()
+    {
+        string winnerAddress = string.Empty;
+        int maxGoals = int.MinValue;
+
+        foreach (var player in PhotonNetwork.PlayerList)
+        {
+            int[] turnScores = (int[])player.CustomProperties["turnScores"];
+            int playerGoals = turnScores.Count(score => score == 1);
+
+            if (playerGoals > maxGoals)
+            {
+                maxGoals = playerGoals;
+                winnerAddress = (string)player.CustomProperties["userAddress"];
+            }
+        }
+        foreach (var player in PhotonNetwork.PlayerList)
+        {
+            if (player.IsMasterClient)
+            {
+                CheckWallet(winnerAddress);
+            }
+        }
     }
 }
-
 
 public static class PlayerRoles
 {

@@ -8,10 +8,17 @@ public class PlayerSetup : MonoBehaviourPun
     public GameObject playerTag;
     public string nickname;
     public TextMeshPro nicknameText;
-    private int role;
+    public int role;
     public Animator animator;
     private PhotonAnimatorView photonAnimatorView;
     public GameObject ball;
+
+    public GameObject[] skin;
+
+    public GameObject camera;
+
+    public GameObject ui;
+
 
     void Start()
     {
@@ -20,18 +27,20 @@ public class PlayerSetup : MonoBehaviourPun
 
         photonAnimatorView.enabled = photonView.IsMine;
         ball.SetActive(false);
+
+        if (photonView.IsMine)
+        {
+            PhotonNetwork.LocalPlayer.TagObject = this;
+        }
+
     }
 
     public void isLocalPlayer()
     {
         playerTag.SetActive(false);
+        //camera.SetActive(true);
+        //ui.SetActive(true);
         Debug.Log(GetRole());
-    }
-
-    public void isWin()
-    {
-        Debug.Log("Ball catch");
-        ball.SetActive(true);
     }
 
     [PunRPC]
@@ -45,7 +54,6 @@ public class PlayerSetup : MonoBehaviourPun
     public void SetRole(int _role)
     {
         role = _role;
-        Debug.Log("Role set to: " + role);
         PlayIdleAnimation();
     }
 
@@ -66,13 +74,14 @@ public class PlayerSetup : MonoBehaviourPun
         return role;
     }
 
+
     [PunRPC]
-    public void TriggerPenaltyKickAnimation(int chooseNumber, double startTime)
+    public void TriggerPenaltyKickAnimation(int chooseNumber, int opponentChoice, double startTime)
     {
-        StartCoroutine(SyncAnimation(chooseNumber, startTime));
+        StartCoroutine(SyncAnimation(chooseNumber, opponentChoice, startTime));
     }
 
-    private IEnumerator SyncAnimation(int chooseNumber, double startTime)
+    private IEnumerator SyncAnimation(int chooseNumber, int opponentChoice, double startTime)
     {
         double timeToWait = startTime - PhotonNetwork.Time;
         if (timeToWait > 0)
@@ -80,11 +89,11 @@ public class PlayerSetup : MonoBehaviourPun
             yield return new WaitForSeconds((float)timeToWait);
         }
 
-        Debug.Log("animation event" + chooseNumber);
         if (animator != null)
         {
             animator.SetTrigger("PenaltyKick");
             animator.SetInteger("chooseNumber", chooseNumber);
+            animator.SetInteger("enemyNumber", opponentChoice);
         }
     }
 }

@@ -1,0 +1,35 @@
+.scoreboard {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.title {
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+.player-scores {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.player-label {
+    font-size: 18px;
+    margin-right: 10px;
+}
+
+.turns-container {
+    flex-direction: row;
+}
+
+.turn {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: white;
+    margin-right: 5px;
+}

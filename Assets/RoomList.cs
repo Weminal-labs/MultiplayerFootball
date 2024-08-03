@@ -29,6 +29,10 @@ public class RoomList : MonoBehaviourPunCallbacks
     private void Awake()
     {
         Instance = this;
+
+        PhotonNetwork.PhotonServerSettings.AppSettings.NetworkLogging = ExitGames.Client.Photon.DebugLevel.ALL;
+        PhotonNetwork.NetworkingClient.LoadBalancingPeer.DisconnectTimeout = 12000000; // 12000 seconds
+        PhotonNetwork.KeepAliveInBackground = 12000000;
     }
 
 

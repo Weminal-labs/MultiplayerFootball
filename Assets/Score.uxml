@@ -1,0 +1,28 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/Score.uss?fileID=7433441132597879392&amp;guid=8e0db824ba86cae4bb42845b1f5a5536&amp;type=3#Score" />
+    <ui:VisualElement class="scoreboard" style="align-items: flex-start;">
+        <ui:Label text="Scoreboard" class="title" />
+        <ui:VisualElement style="flex-grow: 1; flex-direction: row; width: 100%; justify-content: space-around;">
+            <ui:VisualElement class="player-scores" style="justify-content: space-between;">
+                <ui:Label text="Player 1: " name="player1-name" class="player-label" />
+                <ui:VisualElement name="player1-turns" class="turns-container">
+                    <ui:VisualElement name="player1-turn1" class="turn" />
+                    <ui:VisualElement name="player1-turn2" class="turn" />
+                    <ui:VisualElement name="player1-turn3" class="turn" />
+                    <ui:VisualElement name="player1-turn4" class="turn" />
+                    <ui:VisualElement name="player1-turn5" class="turn" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:VisualElement class="player-scores">
+                <ui:Label text="Player 2: " name="player2-name" class="player-label" />
+                <ui:VisualElement name="player2-turns" class="turns-container">
+                    <ui:VisualElement name="player2-turn1" class="turn" />
+                    <ui:VisualElement name="player2-turn2" class="turn" />
+                    <ui:VisualElement name="player2-turn3" class="turn" />
+                    <ui:VisualElement name="player2-turn4" class="turn" />
+                    <ui:VisualElement name="player2-turn5" class="turn" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
