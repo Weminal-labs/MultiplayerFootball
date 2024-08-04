@@ -96,9 +96,11 @@ WebGLInput.captureAllKeyboardInput = false;
         // Determine role based on the number of players already in the room
         role = PhotonNetwork.CurrentRoom.PlayerCount;
         int[] turnScores = new int[maxRounds];
-
-        PhotonNetwork.LocalPlayer.SetCustomProperties(new Hashtable { { "userAdress", RoomPlayer.Instance.userAdress } });
-
+        print("from Room PLayer to Room manager" + RoomPlayer.Instance.userAdress);
+        string address = RoomPlayer.Instance.userAdress;
+        PhotonNetwork.LocalPlayer.SetCustomProperties(new Hashtable { { "userAddress", address } });
+        string winnerAddress = (string)PhotonNetwork.LocalPlayer.CustomProperties["userAddress"];
+        print(winnerAddress);
         PhotonNetwork.LocalPlayer.SetCustomProperties(new Hashtable { { "turnScores", turnScores } });
     }
 
@@ -138,6 +140,7 @@ WebGLInput.captureAllKeyboardInput = false;
 
         Debug.Log(index);
         playerChoice = index;
+        buttonGoalkeeper.SetActive(false);
         photonView.RPC("ReceiveChoice", RpcTarget.Others, index);
 
         StartCoroutine(CheckWinner());
@@ -195,6 +198,7 @@ WebGLInput.captureAllKeyboardInput = false;
             }
 
             Respawn();
+            buttonGoalkeeper.SetActive(true);
 
 
         }
@@ -281,6 +285,9 @@ WebGLInput.captureAllKeyboardInput = false;
 
                 print("BOB Account Address: " + bob.AccountAddress);*/
 
+        print("from Room Manager" + RoomPlayer.Instance.roomId);
+        print("from Room Manager" + winnerAddress);
+
         ISerializable[] transactionArguments ={
         new U64((ulong)RoomPlayer.Instance.roomId),
         new BString(winnerAddress),
@@ -313,6 +320,8 @@ WebGLInput.captureAllKeyboardInput = false;
                 winnerAddress = (string)player.CustomProperties["userAddress"];
             }
         }
+        print(winnerAddress);
+
         foreach (var player in PhotonNetwork.PlayerList)
         {
             if (player.IsMasterClient)

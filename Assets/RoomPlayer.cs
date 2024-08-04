@@ -71,6 +71,8 @@ WebGLInput.captureAllKeyboardInput = false;
         RoomManager.instance.ChangeNickname(data.userName);
         roomId = int.Parse(data.roomId);
         userAdress = data.userId;
+        print("from Room PLayer" + roomId);
+        print("from Room PLayer" + userAdress);
         PhotonNetwork.JoinOrCreateRoom(data.roomId, new RoomOptions { MaxPlayers = 2 }, TypedLobby.Default);
         roomManagerGameObject.SetActive(true);
     }
