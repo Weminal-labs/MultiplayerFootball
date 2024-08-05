@@ -23,7 +23,7 @@ public class RoomManager : MonoBehaviourPunCallbacks
     public GameObject nameUI;
     public GameObject connectingUI;
 
-    private string nickname = "unname";
+    private string nickname = "";
 
     [HideInInspector]
     public int role = 0;
@@ -186,7 +186,7 @@ WebGLInput.captureAllKeyboardInput = false;
             if (allRound >= 2 * maxRounds)
             {
                 DetermineWinnerAndSendAddress();
-                Application.Quit();
+                print("Contract done");
             }
 
             if (currentRound >= maxRounds)
@@ -204,12 +204,12 @@ WebGLInput.captureAllKeyboardInput = false;
         }
     }
 
-    void OnApplicationQuit()
-    {
+    /*    void OnApplicationQuit()
+        {
 
-        // Send a message to React when the application quits
-        Application.ExternalCall("onUnityApplicationQuit");
-    }
+            // Send a message to React when the application quits
+            Application.ExternalCall("onUnityApplicationQuit");
+        }*/
     void TriggerAnimations()
     {
         if (localPlayerObject != null)
@@ -266,33 +266,39 @@ WebGLInput.captureAllKeyboardInput = false;
         }
     }
 
-    IEnumerator SetNet()
+
+
+    public IEnumerator CheckWallet(string winnerAddress)
     {
         RestClient restClient = RestClient.Instance.SetEndPoint(Constants.TESTNET_BASE_URL);
         Coroutine restClientSetupCor = StartCoroutine(RestClient.Instance.SetUp());
         yield return restClientSetupCor;
 
-        AptosTokenClient tokenClient = AptosTokenClient.Instance.SetUp(restClient);
-    }
+        if (restClient == null)
+        {
+            print("Failed to set up the RestClient.");
+            yield break;
+        }
 
-    public void CheckWallet(string winnerAddress)
-    {
-        StartCoroutine(SetNet());
+        AptosTokenClient tokenClient = AptosTokenClient.Instance.SetUp(restClient);
 
         // Initialize Account Using Hexadecimal Private Key.
-        /*        const string PrivateKeyHex = "0xee87f9f47a79a0ccc9ab0f31a18a60e96e1de7ee4ed6f6a54081930a54916a45";
-                Account bob = Account.LoadKey(PrivateKeyHex);
+        const string PrivateKeyHex = "0xee87f9f47a79a0ccc9ab0f31a18a60e96e1de7ee4ed6f6a54081930a54916a45";
+        Account bob = Account.LoadKey(PrivateKeyHex);
 
-                print("BOB Account Address: " + bob.AccountAddress);*/
+        print("BOB Account Address: " + bob.AccountAddress);
+        print("Room Manager Room ID: " + RoomPlayer.Instance.roomId);
+        print("Winner Address: " + winnerAddress);
 
-        print("from Room Manager" + RoomPlayer.Instance.roomId);
-        print("from Room Manager" + winnerAddress);
-
-        ISerializable[] transactionArguments ={
+        ISerializable[] transactionArguments = {
         new U64((ulong)RoomPlayer.Instance.roomId),
         new BString(winnerAddress),
     };
-
+        if (transactionArguments == null)
+        {
+            print("Failed to create transaction arguments.");
+            yield break;
+        }
         // Initialize the Payload.
         EntryFunction payload = EntryFunction.Natural(
             new ModuleId(AccountAddress.FromHex("4dc362f62787da9c0655223fe2819fbac878345cbc5115674e89326e20a42ed7"), "gamev3"), // Package ID and Module Name.
@@ -300,7 +306,36 @@ WebGLInput.captureAllKeyboardInput = false;
             new TagSequence(new ISerializableTag[0]), // Type Arguments.
             new Sequence(transactionArguments) // Arguments.
         );
+        if (payload == null)
+        {
+            print("Failed to create payload.");
+            yield break;
+        }
+        print("Payload done Initialize");
+
+        // Execute Transaction via BCS.
+        SignedTransaction signedTransaction = null;
+
+        // Create an instance of RestClient and call CreateBCSSignedTransaction on it.
+
+        yield return StartCoroutine(restClient.CreateBCSSignedTransaction((_signedTransaction) =>
+        {
+            signedTransaction = _signedTransaction;
+            print("Transaction Created: " + signedTransaction);
+        }, bob, new Aptos.BCS.TransactionPayload(payload)));
+
+        if (signedTransaction != null)
+        {
+            print("Transaction successfully created and signed.");
+            // Further code to submit the transaction
+        }
+        else
+        {
+            print("Failed to create the signed transaction.");
+        }
     }
+
+
 
 
     // Determine winner after all rounds are complete
@@ -326,7 +361,8 @@ WebGLInput.captureAllKeyboardInput = false;
         {
             if (player.IsMasterClient)
             {
-                CheckWallet(winnerAddress);
+                print("Master Client");
+                StartCoroutine(CheckWallet(winnerAddress));
             }
         }
     }
