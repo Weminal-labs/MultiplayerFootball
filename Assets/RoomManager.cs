@@ -41,12 +41,16 @@ public class RoomManager : MonoBehaviourPunCallbacks
     private int currentRound = 0;
     private int allRound = 0;
 
+    public string winnerAddress;
+
     private const int maxRounds = 5;
 
     private GameObject localPlayerObject;
 
 
     public GameObject scoreboardManager;
+
+    public GameObject endGameScreen;
 
     void Awake()
     {
@@ -341,7 +345,7 @@ WebGLInput.captureAllKeyboardInput = false;
     // Determine winner after all rounds are complete
     private void DetermineWinnerAndSendAddress()
     {
-        string winnerAddress = string.Empty;
+        winnerAddress = string.Empty;
         int maxGoals = int.MinValue;
 
         foreach (var player in PhotonNetwork.PlayerList)
@@ -356,15 +360,17 @@ WebGLInput.captureAllKeyboardInput = false;
             }
         }
         print(winnerAddress);
+        endGameScreen.SetActive(true);
 
-        foreach (var player in PhotonNetwork.PlayerList)
-        {
-            if (player.IsMasterClient)
-            {
-                print("Master Client");
-                StartCoroutine(CheckWallet(winnerAddress));
-            }
-        }
+        /*        foreach (var player in PhotonNetwork.PlayerList)
+                {
+                    if (player.IsMasterClient)
+                    {
+                        print("Master Client");
+                        //StartCoroutine(CheckWallet(winnerAddress));
+                        endGameScreen.SetActive(true);
+                    }
+                }*/
     }
 }
 

@@ -1,0 +1,9 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <ui:VisualElement style="flex-grow: 1;">
+        <ui:Label text="End Screen" style="unity-text-align: middle-center; margin-bottom: 20px;" />
+        <ui:VisualElement style="flex-grow: 1; justify-content: center; align-items: center; flex-direction: row;">
+            <ui:Button name="sendUserIdButton" text="Share to X" style="font-size: 24px; margin-right: 16px; margin-left: 16px; border-radius: 10px;" />
+            <ui:Button name="exitButton" text="Exit" style="font-size: 24px; margin-right: 16px; margin-left: 16px; border-radius: 10px;" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
