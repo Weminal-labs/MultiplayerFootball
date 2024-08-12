@@ -1,0 +1,34 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI/Score.uss?fileID=7433441132597879392&amp;guid=8e0db824ba86cae4bb42845b1f5a5536&amp;type=3#Score" />
+    <ui:VisualElement class="scoreboard" style="background-image: url(&apos;project://database/Assets/UI/ds_digital/Untitled%20design.png?fileID=2800000&amp;guid=7a3bb2f217bc69442a22b5ce0af08a5a&amp;type=3#Untitled design&apos;); margin-top: 5px; margin-right: 160px; margin-bottom: 0; margin-left: 160px; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; border-top-left-radius: 10px; border-top-right-radius: 10px; border-bottom-right-radius: 10px; border-bottom-left-radius: 10px;">
+        <ui:VisualElement style="flex-grow: 1; flex-direction: row; justify-content: space-around; align-self: auto; align-items: stretch; margin-left: 0; margin-right: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; -unity-font: url(&apos;project://database/Assets/UI/ds_digital/DS-DIGIT.TTF?fileID=12800000&amp;guid=a139b6ff695a6f4479af3af9281069d6&amp;type=3#DS-DIGIT&apos;); -unity-font-definition: initial; margin-top: 0; margin-bottom: 0;">
+            <ui:Label text="Scoreboard" class="title" style="color: rgb(255, 255, 255); font-size: 18px;" />
+            <ui:VisualElement style="flex-grow: 1; flex-direction: row; align-self: auto; align-items: center; justify-content: flex-end;">
+                <ui:Label text="Timer : " class="title" style="-unity-font: url(&apos;project://database/Assets/UI/ds_digital/DS-DIGIT.TTF?fileID=12800000&amp;guid=a139b6ff695a6f4479af3af9281069d6&amp;type=3#DS-DIGIT&apos;); -unity-font-definition: initial; color: rgb(255, 255, 255); font-size: 18px;" />
+                <ui:Label text="00" name="timer" class="title" style="-unity-font: url(&apos;project://database/Assets/UI/ds_digital/DS-DIGIT.TTF?fileID=12800000&amp;guid=a139b6ff695a6f4479af3af9281069d6&amp;type=3#DS-DIGIT&apos;); -unity-font-definition: initial; color: rgb(255, 255, 255); font-size: 18px;" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement style="flex-grow: 1; flex-direction: row; width: 100%; justify-content: space-around; margin-right: 0; margin-left: 0; align-items: stretch;">
+            <ui:VisualElement class="player-scores" style="justify-content: space-between; flex-direction: column; align-items: center;">
+                <ui:Label text="Player 1: " name="player1-name" class="player-label" style="-unity-font-definition: initial; -unity-font: url(&apos;project://database/Assets/UI/ds_digital/DS-DIGIT.TTF?fileID=12800000&amp;guid=a139b6ff695a6f4479af3af9281069d6&amp;type=3#DS-DIGIT&apos;); color: rgb(255, 255, 255); font-size: 16px;" />
+                <ui:VisualElement name="player1-turns" class="turns-container" style="justify-content: flex-start; font-size: 14px; word-spacing: 0; align-self: auto; align-items: stretch;">
+                    <ui:VisualElement name="player1-turn1" class="turn" />
+                    <ui:VisualElement name="player1-turn2" class="turn" />
+                    <ui:VisualElement name="player1-turn3" class="turn" />
+                    <ui:VisualElement name="player1-turn4" class="turn" />
+                    <ui:VisualElement name="player1-turn5" class="turn" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:VisualElement class="player-scores" style="flex-direction: column;">
+                <ui:Label text="Player 2: " name="player2-name" class="player-label" style="-unity-font: url(&apos;project://database/Assets/UI/ds_digital/DS-DIGIT.TTF?fileID=12800000&amp;guid=a139b6ff695a6f4479af3af9281069d6&amp;type=3#DS-DIGIT&apos;); -unity-font-definition: initial; color: rgb(255, 255, 255); font-size: 16px;" />
+                <ui:VisualElement name="player2-turns" class="turns-container">
+                    <ui:VisualElement name="player2-turn1" class="turn" />
+                    <ui:VisualElement name="player2-turn2" class="turn" />
+                    <ui:VisualElement name="player2-turn3" class="turn" />
+                    <ui:VisualElement name="player2-turn4" class="turn" />
+                    <ui:VisualElement name="player2-turn5" class="turn" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

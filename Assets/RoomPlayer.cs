@@ -15,9 +15,10 @@ public class RoomPlayer : MonoBehaviourPunCallbacks
     public GameObject camm;
     public GameObject roomManagerGameObject;
 
-    public int roomId;
+    public int roomId = 0000;
     public string userAdress;
 
+    public AudioSource audioSource;
 
     private void Awake()
     {
@@ -75,6 +76,11 @@ WebGLInput.captureAllKeyboardInput = false;
         print("from Room PLayer" + userAdress);
         PhotonNetwork.JoinOrCreateRoom(data.roomId, new RoomOptions { MaxPlayers = 2 }, TypedLobby.Default);
         roomManagerGameObject.SetActive(true);
+    }
+
+    public void SoundControl(int volumn)
+    {
+        audioSource.volume = volumn;
     }
 
     public override void OnDisconnected(DisconnectCause cause)

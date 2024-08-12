@@ -1,4 +1,5 @@
 using Photon.Pun;
+using Photon.Realtime;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -8,6 +9,7 @@ public class ScoreboardManager : MonoBehaviourPunCallbacks
     private VisualElement player2TurnsContainer;
     private Label player1Name;
     private Label player2Name;
+    private Label timer;
 
     void OnEnable()
     {
@@ -17,11 +19,14 @@ public class ScoreboardManager : MonoBehaviourPunCallbacks
         player2TurnsContainer = root.Q<VisualElement>("player2-turns");
         player1Name = root.Q<Label>("player1-name");
         player2Name = root.Q<Label>("player2-name");
+        timer = root.Q<Label>("timer");
 
         if (PhotonNetwork.IsMasterClient)
         {
             UpdateScores();
         }
+
+        player1Name.text = PhotonNetwork.LocalPlayer.NickName;
     }
 
     [PunRPC]
@@ -64,6 +69,11 @@ public class ScoreboardManager : MonoBehaviourPunCallbacks
         photonView.RPC("UpdateScores", RpcTarget.All);
     }
 
+    public void UpdateTimer(float time)
+    {
+        timer.text = time.ToString();
+    }
+
     private void UpdateTurnColor(VisualElement turnElement, int score)
     {
         if (score > 0)
@@ -78,5 +88,10 @@ public class ScoreboardManager : MonoBehaviourPunCallbacks
         {
             turnElement.style.backgroundColor = new StyleColor(Color.red);
         }
+    }
+
+    public void setName(Player newPlayer)
+    {
+        player2Name.text = newPlayer.NickName;
     }
 }

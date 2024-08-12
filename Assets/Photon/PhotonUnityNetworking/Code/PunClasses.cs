@@ -23,14 +23,13 @@
 
 namespace Photon.Pun
 {
+    using ExitGames.Client.Photon;
+    using Photon.Realtime;
     using System;
     using System.Collections.Generic;
     using System.Reflection;
-    using ExitGames.Client.Photon;
     using UnityEngine;
     using UnityEngine.SceneManagement;
-    using Photon.Realtime;
-    using SupportClassPun = ExitGames.Client.Photon.SupportClass;
 
 
     /// <summary>Replacement for RPC attribute with different name. Used to flag methods as remote-callable.</summary>
@@ -57,18 +56,18 @@ namespace Photon.Pun
         {
             get
             {
-                #if UNITY_EDITOR
+#if UNITY_EDITOR
                 // In the editor we want to avoid caching this at design time, so changes in PV structure appear immediately.
                 if (!Application.isPlaying || this.pvCache == null)
                 {
                     this.pvCache = PhotonView.Get(this);
                 }
-                #else
+#else
                 if (this.pvCache == null)
                 {
                     this.pvCache = PhotonView.Get(this);
                 }
-                #endif
+#endif
                 return this.pvCache;
             }
         }
@@ -104,7 +103,7 @@ namespace Photon.Pun
     /// </remarks>
     /// \ingroup callbacks
     // the documentation for the interface methods becomes inherited when Doxygen builds it.
-    public class MonoBehaviourPunCallbacks : MonoBehaviourPun, IConnectionCallbacks , IMatchmakingCallbacks , IInRoomCallbacks, ILobbyCallbacks, IWebRpcCallback, IErrorInfoCallback
+    public class MonoBehaviourPunCallbacks : MonoBehaviourPun, IConnectionCallbacks, IMatchmakingCallbacks, IInRoomCallbacks, ILobbyCallbacks, IWebRpcCallback, IErrorInfoCallback
     {
         public virtual void OnEnable()
         {
@@ -385,7 +384,7 @@ namespace Photon.Pun
         /// this won't be called!
         /// </remarks>
         /// <param name="debugMessage">Contains a debug message why authentication failed. This has to be fixed during development.</param>
-        public virtual void OnCustomAuthenticationFailed (string debugMessage)
+        public virtual void OnCustomAuthenticationFailed(string debugMessage)
         {
         }
 
@@ -444,7 +443,7 @@ namespace Photon.Pun
         {
             get
             {
-                uint u = (uint) this.timeInt;
+                uint u = (uint)this.timeInt;
                 double t = u;
                 return t / 1000.0d;
             }
@@ -550,7 +549,7 @@ namespace Photon.Pun
         {
             if (pos != newWriteData.Count)
             {
-                throw new Exception("SetWriteStream failed, because count does not match position value. pos: "+ pos + " newWriteData.Count:" + newWriteData.Count);
+                throw new Exception("SetWriteStream failed, because count does not match position value. pos: " + pos + " newWriteData.Count:" + newWriteData.Count);
             }
             this.writeData = newWriteData;
             this.currentItem = pos;
@@ -639,7 +638,7 @@ namespace Photon.Pun
             {
                 if (this.readData.Length > this.currentItem)
                 {
-                    myBool = (bool) this.readData[this.currentItem];
+                    myBool = (bool)this.readData[this.currentItem];
                     this.currentItem++;
                 }
             }
@@ -658,7 +657,7 @@ namespace Photon.Pun
             {
                 if (this.readData.Length > this.currentItem)
                 {
-                    myInt = (int) this.readData[this.currentItem];
+                    myInt = (int)this.readData[this.currentItem];
                     this.currentItem++;
                 }
             }
@@ -677,7 +676,7 @@ namespace Photon.Pun
             {
                 if (this.readData.Length > this.currentItem)
                 {
-                    value = (string) this.readData[this.currentItem];
+                    value = (string)this.readData[this.currentItem];
                     this.currentItem++;
                 }
             }
@@ -735,7 +734,7 @@ namespace Photon.Pun
             {
                 if (this.readData.Length > this.currentItem)
                 {
-                    value = (short) this.readData[this.currentItem];
+                    value = (short)this.readData[this.currentItem];
                     this.currentItem++;
                 }
             }
@@ -754,7 +753,7 @@ namespace Photon.Pun
             {
                 if (this.readData.Length > this.currentItem)
                 {
-                    obj = (float) this.readData[this.currentItem];
+                    obj = (float)this.readData[this.currentItem];
                     this.currentItem++;
                 }
             }
@@ -773,7 +772,7 @@ namespace Photon.Pun
             {
                 if (this.readData.Length > this.currentItem)
                 {
-                    obj = (Player) this.readData[this.currentItem];
+                    obj = (Player)this.readData[this.currentItem];
                     this.currentItem++;
                 }
             }
@@ -792,7 +791,7 @@ namespace Photon.Pun
             {
                 if (this.readData.Length > this.currentItem)
                 {
-                    obj = (Vector3) this.readData[this.currentItem];
+                    obj = (Vector3)this.readData[this.currentItem];
                     this.currentItem++;
                 }
             }
@@ -811,7 +810,7 @@ namespace Photon.Pun
             {
                 if (this.readData.Length > this.currentItem)
                 {
-                    obj = (Vector2) this.readData[this.currentItem];
+                    obj = (Vector2)this.readData[this.currentItem];
                     this.currentItem++;
                 }
             }
@@ -830,7 +829,7 @@ namespace Photon.Pun
             {
                 if (this.readData.Length > this.currentItem)
                 {
-                    obj = (Quaternion) this.readData[this.currentItem];
+                    obj = (Quaternion)this.readData[this.currentItem];
                     this.currentItem++;
                 }
             }
@@ -855,13 +854,13 @@ namespace Photon.Pun
         }
 
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         /// <summary>In Editor, we can access the active scene's name.</summary>
         public static string EditorActiveSceneName
         {
             get { return SceneManager.GetActiveScene().name; }
         }
-        #endif
+#endif
     }
 
 
@@ -904,7 +903,7 @@ namespace Photon.Pun
             bool wasActive = res.activeSelf;
             if (wasActive) res.SetActive(false);
 
-            GameObject instance =GameObject.Instantiate(res, position, rotation) as GameObject;
+            GameObject instance = GameObject.Instantiate(res, position, rotation) as GameObject;
 
             if (wasActive) res.SetActive(true);
             return instance;
@@ -975,20 +974,20 @@ namespace Photon.Pun
 
         public static bool CheckIsAssignableFrom(this Type to, Type from)
         {
-            #if !NETFX_CORE
+#if !NETFX_CORE
             return to.IsAssignableFrom(from);
-            #else
+#else
             return to.GetTypeInfo().IsAssignableFrom(from.GetTypeInfo());
-            #endif
+#endif
         }
 
         public static bool CheckIsInterface(this Type to)
         {
-            #if !NETFX_CORE
+#if !NETFX_CORE
             return to.IsInterface;
-            #else
+#else
             return to.GetTypeInfo().IsInterface;
-            #endif
+#endif
         }
     }
 }

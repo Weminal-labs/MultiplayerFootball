@@ -1,3 +1,6 @@
+using Newtonsoft.Json;
+using Photon.Pun;
+using System.Runtime.InteropServices;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -13,8 +16,8 @@ public class SendDataToReact : MonoBehaviour
         var closeButton = root.Q<Button>("exitButton");
 
         // Register button click events
-        sendButton.clicked += SendMessageToReact;
-        closeButton.clicked += CloseUnityApplication;
+        closeButton.clicked += SendMessageToReact;
+        sendButton.clicked += CloseUnityApplication;
     }
 
     private void SendMessageToReact()
@@ -34,12 +37,24 @@ public class SendDataToReact : MonoBehaviour
         };
 
         // Convert the JSON object to a string
-        string jsonString = JsonUtility.ToJson(jsonData);
+        string jsonString = JsonConvert.SerializeObject(jsonData);
+
+        print(jsonString);
+        print(jsonString.GetType());
 
         // Call the JavaScript function to send the message to React
-        Application.ExternalCall("FinishGame", jsonString);
 
         // Optionally, you can close the application after sending the message
+
+        foreach (var player in PhotonNetwork.PlayerList)
+        {
+            if (player.IsMasterClient)
+            {
+#if UNITY_WEBGL == true && UNITY_EDITOR == false
+                FinishGame(jsonString);
+#endif
+            }
+        }
         Application.Quit();
     }
 
@@ -48,4 +63,8 @@ public class SendDataToReact : MonoBehaviour
         // Close the Unity application
         Application.Quit();
     }
+
+    [DllImport("__Internal")]
+    private static extern void FinishGame(string jsonString);
+
 }

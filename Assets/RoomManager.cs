@@ -1,6 +1,3 @@
-using Aptos.Accounts;
-using Aptos.BCS;
-using Aptos.Unity.Rest;
 using Photon.Pun;
 using Photon.Realtime;
 using System.Collections;
@@ -41,9 +38,9 @@ public class RoomManager : MonoBehaviourPunCallbacks
     private int currentRound = 0;
     private int allRound = 0;
 
-    public string winnerAddress;
+    public string winnerAddress = "0000";
 
-    private const int maxRounds = 5;
+    private const int maxRounds = 1;
 
     private GameObject localPlayerObject;
 
@@ -51,6 +48,9 @@ public class RoomManager : MonoBehaviourPunCallbacks
     public GameObject scoreboardManager;
 
     public GameObject endGameScreen;
+
+    private float countdownTimer = 10f;
+    private bool choiceMade = false;
 
     void Awake()
     {
@@ -95,6 +95,19 @@ WebGLInput.captureAllKeyboardInput = false;
 
     }
 
+    public override void OnPlayerEnteredRoom(Player newPlayer)
+    {
+        base.OnPlayerEnteredRoom(newPlayer);
+        Debug.Log("Player entered room.");
+        scoreboardManager.GetComponent<ScoreboardManager>().setName(newPlayer);
+        if (PhotonNetwork.CurrentRoom.PlayerCount > 1)
+        {
+            StartCoroutine(StartCountdown());
+        }
+    }
+
+
+
     void AssignRole()
     {
         // Determine role based on the number of players already in the room
@@ -132,10 +145,14 @@ WebGLInput.captureAllKeyboardInput = false;
         }
 
         PhotonNetwork.LocalPlayer.NickName = nickname;
+
+
     }
 
     public void OnButtonClick(int index)
     {
+        choiceMade = true;
+
         if (currentRound >= maxRounds)
         {
             Debug.Log("Game Over");
@@ -149,6 +166,36 @@ WebGLInput.captureAllKeyboardInput = false;
 
         StartCoroutine(CheckWinner());
     }
+
+    private IEnumerator StartCountdown()
+    {
+        countdownTimer = 10f;
+        choiceMade = false;
+
+        while (countdownTimer > 0)
+        {
+            if (choiceMade)
+                yield break;
+
+            // Update the timer display
+            scoreboardManager.GetComponent<ScoreboardManager>().UpdateTimer(countdownTimer);
+
+            // Wait for 1 second
+            yield return new WaitForSeconds(1f);
+
+            // Decrease the timer by 1 second
+            countdownTimer -= 1f;
+        }
+
+        // Handle the case when time runs out and no choice has been made
+        if (!choiceMade)
+        {
+            Debug.Log("Time's up! Auto-selecting 0.");
+            OnButtonClick(0);
+        }
+    }
+
+
 
     [PunRPC]
     void ReceiveChoice(int index)
@@ -203,7 +250,7 @@ WebGLInput.captureAllKeyboardInput = false;
 
             Respawn();
             buttonGoalkeeper.SetActive(true);
-
+            StartCoroutine(StartCountdown());
 
         }
     }
@@ -218,7 +265,7 @@ WebGLInput.captureAllKeyboardInput = false;
     {
         if (localPlayerObject != null)
         {
-            double animationStartTime = PhotonNetwork.Time + 0.2f;
+            double animationStartTime = PhotonNetwork.Time + 0.3f;
 
             localPlayerObject.GetComponent<PlayerSetup>().GetComponent<PhotonView>().RPC("TriggerPenaltyKickAnimation", RpcTarget.AllBufferedViaServer, playerChoice, opponentChoice, animationStartTime);
         }
@@ -270,74 +317,6 @@ WebGLInput.captureAllKeyboardInput = false;
         }
     }
 
-
-
-    public IEnumerator CheckWallet(string winnerAddress)
-    {
-        RestClient restClient = RestClient.Instance.SetEndPoint(Constants.TESTNET_BASE_URL);
-        Coroutine restClientSetupCor = StartCoroutine(RestClient.Instance.SetUp());
-        yield return restClientSetupCor;
-
-        if (restClient == null)
-        {
-            print("Failed to set up the RestClient.");
-            yield break;
-        }
-
-        AptosTokenClient tokenClient = AptosTokenClient.Instance.SetUp(restClient);
-
-        // Initialize Account Using Hexadecimal Private Key.
-        const string PrivateKeyHex = "0xee87f9f47a79a0ccc9ab0f31a18a60e96e1de7ee4ed6f6a54081930a54916a45";
-        Account bob = Account.LoadKey(PrivateKeyHex);
-
-        print("BOB Account Address: " + bob.AccountAddress);
-        print("Room Manager Room ID: " + RoomPlayer.Instance.roomId);
-        print("Winner Address: " + winnerAddress);
-
-        ISerializable[] transactionArguments = {
-        new U64((ulong)RoomPlayer.Instance.roomId),
-        new BString(winnerAddress),
-    };
-        if (transactionArguments == null)
-        {
-            print("Failed to create transaction arguments.");
-            yield break;
-        }
-        // Initialize the Payload.
-        EntryFunction payload = EntryFunction.Natural(
-            new ModuleId(AccountAddress.FromHex("4dc362f62787da9c0655223fe2819fbac878345cbc5115674e89326e20a42ed7"), "gamev3"), // Package ID and Module Name.
-            "pick_winner_and_transfer_bet", // Function Name.
-            new TagSequence(new ISerializableTag[0]), // Type Arguments.
-            new Sequence(transactionArguments) // Arguments.
-        );
-        if (payload == null)
-        {
-            print("Failed to create payload.");
-            yield break;
-        }
-        print("Payload done Initialize");
-
-        // Execute Transaction via BCS.
-        SignedTransaction signedTransaction = null;
-
-        // Create an instance of RestClient and call CreateBCSSignedTransaction on it.
-
-        yield return StartCoroutine(restClient.CreateBCSSignedTransaction((_signedTransaction) =>
-        {
-            signedTransaction = _signedTransaction;
-            print("Transaction Created: " + signedTransaction);
-        }, bob, new Aptos.BCS.TransactionPayload(payload)));
-
-        if (signedTransaction != null)
-        {
-            print("Transaction successfully created and signed.");
-            // Further code to submit the transaction
-        }
-        else
-        {
-            print("Failed to create the signed transaction.");
-        }
-    }
 
 
 
