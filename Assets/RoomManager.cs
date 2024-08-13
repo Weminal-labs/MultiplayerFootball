@@ -326,7 +326,7 @@ WebGLInput.captureAllKeyboardInput = false;
     {
         winnerAddress = string.Empty;
         int maxGoals = int.MinValue;
-
+        Player winner = null;
         foreach (var player in PhotonNetwork.PlayerList)
         {
             int[] turnScores = (int[])player.CustomProperties["turnScores"];
@@ -336,8 +336,14 @@ WebGLInput.captureAllKeyboardInput = false;
             {
                 maxGoals = playerGoals;
                 winnerAddress = (string)player.CustomProperties["userAddress"];
+                winner = player;
             }
         }
+
+        endGameScreen.GetComponent<SendDataToReact>().UpdateScore(winner,
+                                                     ((int[])PhotonNetwork.PlayerList[0].CustomProperties["turnScores"]).Count(score => score == 1),
+                                                     ((int[])PhotonNetwork.PlayerList[1].CustomProperties["turnScores"]).Count(score => score == 1));
+
         print(winnerAddress);
         endGameScreen.SetActive(true);
 

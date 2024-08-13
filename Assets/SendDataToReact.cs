@@ -1,11 +1,17 @@
 using Newtonsoft.Json;
 using Photon.Pun;
+using Photon.Realtime;
 using System.Runtime.InteropServices;
 using UnityEngine;
 using UnityEngine.UIElements;
 
 public class SendDataToReact : MonoBehaviour
 {
+
+    private Label winLabel;
+    private Label player1Score;
+    private Label player2Score;
+
     void OnEnable()
     {
         // Get the root of the UI
@@ -15,10 +21,26 @@ public class SendDataToReact : MonoBehaviour
         var sendButton = root.Q<Button>("sendUserIdButton");
         var closeButton = root.Q<Button>("exitButton");
 
+        winLabel = root.Q<Label>("winLabel");
+        player1Score = root.Q<Label>("player1Score");
+        player2Score = root.Q<Label>("player2Score");
+
+
         // Register button click events
         closeButton.clicked += SendMessageToReact;
         sendButton.clicked += CloseUnityApplication;
     }
+
+    public void UpdateScore(Player player, int scorePlayer1, int scorePlayer2)
+    {
+        if (player.IsLocal)
+        {
+            winLabel.text = "You win!";
+        }
+        player1Score.text = scorePlayer1.ToString();
+        player2Score.text = scorePlayer2.ToString();
+    }
+
 
     private void SendMessageToReact()
     {

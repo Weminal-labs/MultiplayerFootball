@@ -1,7 +1,14 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
-    <ui:VisualElement style="flex-grow: 1;">
-        <ui:Label text="End Screen" style="unity-text-align: middle-center; margin-bottom: 20px;" />
-        <ui:VisualElement style="flex-grow: 1; justify-content: center; align-items: center; flex-direction: row;">
+    <ui:VisualElement style="flex-grow: 1; opacity: 1; overflow: visible; background-color: rgba(0, 0, 0, 0.39);">
+        <ui:VisualElement style="flex-grow: 1;">
+            <ui:Label tabindex="-1" text="You Lose" parse-escape-sequences="true" display-tooltip-when-elided="true" name="winLabel" style="-unity-text-align: middle-center; font-size: 60px; color: rgb(255, 255, 255); -unity-font-definition: initial; -unity-font: url(&apos;project://database/Assets/UI/ds_digital/DS-DIGI.TTF?fileID=12800000&amp;guid=15c3a095c1f56cd4f8129be580170801&amp;type=3#DS-DIGI&apos;); -unity-font-style: bold;" />
+            <ui:VisualElement style="flex-grow: 1; flex-direction: row; min-width: auto; min-height: auto; align-items: center; justify-content: center;">
+                <ui:Label tabindex="-1" text="0" parse-escape-sequences="true" display-tooltip-when-elided="true" name="player1Score" style="font-size: 40px; -unity-font: url(&apos;project://database/Assets/UI/ds_digital/DS-DIGI.TTF?fileID=12800000&amp;guid=15c3a095c1f56cd4f8129be580170801&amp;type=3#DS-DIGI&apos;); -unity-font-definition: initial; color: rgb(255, 255, 255); -unity-font-style: bold;" />
+                <ui:Label tabindex="-1" text=" - " parse-escape-sequences="true" display-tooltip-when-elided="true" style="-unity-font: url(&apos;project://database/Assets/UI/ds_digital/DS-DIGI.TTF?fileID=12800000&amp;guid=15c3a095c1f56cd4f8129be580170801&amp;type=3#DS-DIGI&apos;); -unity-font-definition: initial; font-size: 40px; color: rgb(255, 255, 255); -unity-font-style: bold;" />
+                <ui:Label tabindex="-1" text="0" parse-escape-sequences="true" display-tooltip-when-elided="true" name="player2Score" style="-unity-font-definition: initial; -unity-font: url(&apos;project://database/Assets/UI/ds_digital/DS-DIGI.TTF?fileID=12800000&amp;guid=15c3a095c1f56cd4f8129be580170801&amp;type=3#DS-DIGI&apos;); font-size: 40px; color: rgb(255, 255, 255); -unity-font-style: bold;" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement style="flex-grow: 2; justify-content: center; align-items: center; flex-direction: row; flex-shrink: 2;">
             <ui:Button name="sendUserIdButton" text="Share to X" style="font-size: 24px; margin-right: 16px; margin-left: 16px; border-radius: 10px;" />
             <ui:Button name="exitButton" text="Exit" style="font-size: 24px; margin-right: 16px; margin-left: 16px; border-radius: 10px;" />
         </ui:VisualElement>
