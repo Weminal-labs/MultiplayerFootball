@@ -340,12 +340,14 @@ WebGLInput.captureAllKeyboardInput = false;
             }
         }
 
-        endGameScreen.GetComponent<SendDataToReact>().UpdateScore(winner,
-                                                     ((int[])PhotonNetwork.PlayerList[0].CustomProperties["turnScores"]).Count(score => score == 1),
-                                                     ((int[])PhotonNetwork.PlayerList[1].CustomProperties["turnScores"]).Count(score => score == 1));
+
 
         print(winnerAddress);
         endGameScreen.SetActive(true);
+        endGameScreen.GetComponent<SendDataToReact>().UpdateScore(winner);
+        endGameScreen.GetComponent<SendDataToReact>().SendMessageToReact();
+        //((int[])PhotonNetwork.PlayerList[0].CustomProperties["turnScores"]).Count(score => score == 1),
+        //((int[])PhotonNetwork.PlayerList[1].CustomProperties["turnScores"]).Count(score => score == 1));
 
         /*        foreach (var player in PhotonNetwork.PlayerList)
                 {

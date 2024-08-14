@@ -27,22 +27,29 @@ public class SendDataToReact : MonoBehaviour
 
 
         // Register button click events
-        closeButton.clicked += SendMessageToReact;
-        sendButton.clicked += CloseUnityApplication;
+        closeButton.clicked += CloseUnityApplication;
     }
 
-    public void UpdateScore(Player player, int scorePlayer1, int scorePlayer2)
+    public void UpdateScore(Player playerWin)
     {
-        if (player.IsLocal)
+        if (playerWin.IsLocal)
         {
             winLabel.text = "You win!";
         }
-        player1Score.text = scorePlayer1.ToString();
-        player2Score.text = scorePlayer2.ToString();
+
+        /*        int[] result = new int[2];
+                foreach (var player in PhotonNetwork.PlayerList)
+                {
+                    int[] turnScores = (int[])player.CustomProperties["turnScores"];
+                    int playerGoals = turnScores.Count(score => score == 1);
+                    result[player.ActorNumber - 1] = playerGoals;
+                }
+                player1Score.text = result[0].ToString();
+                player2Score.text = result[1].ToString();*/
     }
 
 
-    private void SendMessageToReact()
+    public void SendMessageToReact()
     {
         // Make sure that RoomPlayer.Instance and RoomManager.instance are properly initialized
         if (RoomPlayer.Instance == null || RoomManager.instance == null)
@@ -77,7 +84,6 @@ public class SendDataToReact : MonoBehaviour
 #endif
             }
         }
-        Application.Quit();
     }
 
     private void CloseUnityApplication()
