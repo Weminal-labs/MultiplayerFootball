@@ -30,12 +30,14 @@ public class SendDataToReact : MonoBehaviour
         closeButton.clicked += CloseUnityApplication;
     }
 
-    public void UpdateScore(Player playerWin)
+    public void UpdateScore(Player playerWin, int[] result)
     {
         if (playerWin.IsLocal)
         {
             winLabel.text = "You win!";
         }
+        player1Score.text = result[1].ToString();
+        player2Score.text = result[2].ToString();
 
         /*        int[] result = new int[2];
                 foreach (var player in PhotonNetwork.PlayerList)
@@ -89,10 +91,14 @@ public class SendDataToReact : MonoBehaviour
     private void CloseUnityApplication()
     {
         // Close the Unity application
+#if UNITY_WEBGL == true && UNITY_EDITOR == false
+                ExitGame();
+#endif        
         Application.Quit();
     }
 
     [DllImport("__Internal")]
     private static extern void FinishGame(string jsonString);
-
+    [DllImport("__Internal")]
+    private static extern void ExitGame();
 }

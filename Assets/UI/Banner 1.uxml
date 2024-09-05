@@ -1,0 +1,5 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <ui:VisualElement style="flex-grow: 1; opacity: 1; visibility: visible; background-color: rgba(0, 0, 0, 0.55); -unity-text-align: upper-center; justify-content: center;">
+        <ui:Label tabindex="-1" text="Your Turn to Catch" parse-escape-sequences="true" display-tooltip-when-elided="true" style="justify-content: flex-start; background-color: rgb(255, 255, 255); font-size: 56px; -unity-font: url(&apos;project://database/Assets/UI/ds_digital/DS-DIGI.TTF?fileID=12800000&amp;guid=15c3a095c1f56cd4f8129be580170801&amp;type=3#DS-DIGI&apos;); -unity-font-definition: initial; -unity-font-style: bold-and-italic; -unity-text-align: middle-center;" />
+    </ui:VisualElement>
+</ui:UXML>

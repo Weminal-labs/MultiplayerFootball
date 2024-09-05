@@ -34,6 +34,7 @@ public class ScoreboardManager : MonoBehaviourPunCallbacks
     {
         // Get the current player's turn scores
         int[] player1TurnScores = (int[])PhotonNetwork.LocalPlayer.CustomProperties["turnScores"];
+        print("Player 1 turn scores retrieved: " + player1TurnScores.Length);
         int[] player2TurnScores = null;
 
         foreach (var player in PhotonNetwork.PlayerList)
@@ -50,19 +51,53 @@ public class ScoreboardManager : MonoBehaviourPunCallbacks
             Debug.LogWarning("Player 2 turn scores not found.");
             return;
         }
+        print(player1TurnScores.Length);
+
+        // Ensure the player1-turns container has enough VisualElement children
+        //AdjustTurnElements(player1TurnsContainer, player2TurnsContainer, player1TurnScores.Length);
 
         // Update the UI for player 1
         for (int i = 0; i < player1TurnScores.Length; i++)
         {
-            UpdateTurnColor(player1TurnsContainer[i], player1TurnScores[i]);
+            if (i < 3)
+            {
+                UpdateTurnColor(player1TurnsContainer[i], player1TurnScores[i]);
+            }
+            if (i >= 3)
+            {
+                UpdateTurnColor(player1TurnsContainer[i % 3], player1TurnScores[i]);
+            }
         }
 
         // Update the UI for player 2
         for (int i = 0; i < player2TurnScores.Length; i++)
         {
-            UpdateTurnColor(player2TurnsContainer[i], player2TurnScores[i]);
+            if (i < 3)
+            {
+
+                UpdateTurnColor(player2TurnsContainer[i], player2TurnScores[i]);
+            }
+            if (i >= 3)
+            {
+                UpdateTurnColor(player2TurnsContainer[i % 3], player2TurnScores[i]);
+            }
         }
     }
+
+    private void AdjustTurnElements(VisualElement turnsContainer, VisualElement turnsContainer2, int requiredCount)
+    {
+        int currentCount = turnsContainer.childCount;
+
+        // Add missing VisualElements if necessary
+        for (int i = currentCount; i < requiredCount; i++)
+        {
+            var newTurnElement = new VisualElement();
+            newTurnElement.AddToClassList("turn");
+            turnsContainer.Add(newTurnElement);
+            turnsContainer2.Add(newTurnElement);
+        }
+    }
+
 
     public void CallUpdateScores()
     {

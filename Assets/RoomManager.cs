@@ -39,8 +39,7 @@ public class RoomManager : MonoBehaviourPunCallbacks
     private int allRound = 0;
 
     public string winnerAddress = "0000";
-
-    private const int maxRounds = 1;
+    private int maxRounds = 3;
 
     private GameObject localPlayerObject;
 
@@ -52,6 +51,8 @@ public class RoomManager : MonoBehaviourPunCallbacks
     private float countdownTimer = 10f;
     private bool choiceMade = false;
 
+    public GameObject[] Banner;
+
     void Awake()
     {
         instance = this;
@@ -62,7 +63,6 @@ WebGLInput.captureAllKeyboardInput = false;
 
         PhotonNetwork.UseRpcMonoBehaviourCache = true;
 
-        PhotonNetwork.PhotonServerSettings.AppSettings.NetworkLogging = ExitGames.Client.Photon.DebugLevel.ALL;
         PhotonNetwork.NetworkingClient.LoadBalancingPeer.DisconnectTimeout = 12000000; // 12000 seconds
         PhotonNetwork.KeepAliveInBackground = 12000000;
     }
@@ -84,7 +84,6 @@ WebGLInput.captureAllKeyboardInput = false;
     public override void OnJoinedRoom()
     {
         base.OnJoinedRoom();
-        Debug.Log("Joined room.");
         roomCam.SetActive(false);
 
         AssignRole();
@@ -98,14 +97,20 @@ WebGLInput.captureAllKeyboardInput = false;
     public override void OnPlayerEnteredRoom(Player newPlayer)
     {
         base.OnPlayerEnteredRoom(newPlayer);
-        Debug.Log("Player entered room.");
         scoreboardManager.GetComponent<ScoreboardManager>().setName(newPlayer);
         if (PhotonNetwork.CurrentRoom.PlayerCount > 1)
         {
+            StartCoroutine(ShowBanner());
             StartCoroutine(StartCountdown());
         }
     }
 
+    public IEnumerator ShowBanner()
+    {
+        Banner[role - 1].SetActive(true);
+        yield return new WaitForSeconds(2f);
+        Banner[role - 1].SetActive(false);
+    }
 
 
     void AssignRole()
@@ -113,7 +118,6 @@ WebGLInput.captureAllKeyboardInput = false;
         // Determine role based on the number of players already in the room
         role = PhotonNetwork.CurrentRoom.PlayerCount;
         int[] turnScores = new int[maxRounds];
-        print("from Room PLayer to Room manager" + RoomPlayer.Instance.userAdress);
         string address = RoomPlayer.Instance.userAdress;
         PhotonNetwork.LocalPlayer.SetCustomProperties(new Hashtable { { "userAddress", address } });
         string winnerAddress = (string)PhotonNetwork.LocalPlayer.CustomProperties["userAddress"];
@@ -134,6 +138,7 @@ WebGLInput.captureAllKeyboardInput = false;
 
         playerSetup.GetComponent<PhotonView>().RPC("SetName", RpcTarget.AllBuffered, nickname);
         playerSetup.GetComponent<PhotonView>().RPC("SetRole", RpcTarget.AllBufferedViaServer, role);
+        playerSetup.GetComponent<PhotonView>().RPC("SetSkin", RpcTarget.AllBufferedViaServer, PhotonNetwork.LocalPlayer.ActorNumber);
 
         playerSetup.isLocalPlayer();
 
@@ -153,13 +158,11 @@ WebGLInput.captureAllKeyboardInput = false;
     {
         choiceMade = true;
 
-        if (currentRound >= maxRounds)
+        if (currentRound > maxRounds)
         {
-            Debug.Log("Game Over");
             return;
         }
 
-        Debug.Log(index);
         playerChoice = index;
         buttonGoalkeeper.SetActive(false);
         photonView.RPC("ReceiveChoice", RpcTarget.Others, index);
@@ -169,6 +172,8 @@ WebGLInput.captureAllKeyboardInput = false;
 
     private IEnumerator StartCountdown()
     {
+
+
         countdownTimer = 10f;
         choiceMade = false;
 
@@ -190,7 +195,6 @@ WebGLInput.captureAllKeyboardInput = false;
         // Handle the case when time runs out and no choice has been made
         if (!choiceMade)
         {
-            Debug.Log("Time's up! Auto-selecting 0.");
             OnButtonClick(0);
         }
     }
@@ -200,7 +204,6 @@ WebGLInput.captureAllKeyboardInput = false;
     [PunRPC]
     void ReceiveChoice(int index)
     {
-        Debug.Log(index);
         opponentChoice = index;
         StartCoroutine(CheckWinner());
     }
@@ -219,14 +222,20 @@ WebGLInput.captureAllKeyboardInput = false;
             }
             if (!isGoalkeeper && playerChoice == opponentChoice)
             {
-                // Player scores a goal
+                // Goalkeeper blocks the goal
                 UpdateScore(-1, currentRound);
             }
 
-
-
             TriggerAnimations();
             yield return new WaitForSeconds(3.5f);
+            Banner[2].SetActive(true);
+
+            yield return new WaitForSeconds(1.5f);
+            Banner[2].SetActive(false);
+
+            yield return new WaitForSeconds(1f);
+
+            Banner[role - 1].SetActive(true);
 
             playerChoice = -1;
             opponentChoice = -1;
@@ -234,27 +243,82 @@ WebGLInput.captureAllKeyboardInput = false;
             currentRound++;
             allRound++;
 
+            yield return new WaitForSeconds(2f);
+
+            Banner[role - 1].SetActive(false);
+
             if (allRound >= 2 * maxRounds)
             {
-                DetermineWinnerAndSendAddress();
-                print("Contract done");
+                if (CheckIfTied())
+                {
+                    maxRounds++; // Increase the max rounds for an extra round
+                    print("Tied max round" + maxRounds);
+
+
+                    int[] turnScores = (int[])PhotonNetwork.LocalPlayer.CustomProperties["turnScores"];
+                    int[] newTurnScores = new int[maxRounds];
+                    turnScores.CopyTo(newTurnScores, 0); // Copy existing scores
+                    PhotonNetwork.LocalPlayer.SetCustomProperties(new Hashtable { { "turnScores", newTurnScores } });
+
+                    yield return new WaitForSeconds(0.2f);
+
+                    int[] testturnScores = (int[])PhotonNetwork.LocalPlayer.CustomProperties["turnScores"];
+
+                    print("Tied" + testturnScores.Length);
+                    SwapRoles();
+
+                }
+                else
+                {
+                    if (localPlayerObject != null)
+                    {
+                        PhotonNetwork.Destroy(localPlayerObject);
+                    }
+                    DetermineWinnerAndSendAddress();
+                    yield break;  // Exit the coroutine here to avoid running the following code
+
+                }
             }
 
-            if (currentRound >= maxRounds)
+            if (currentRound > 3)
             {
-                Debug.Log("Round Over");
-                currentRound = 0;
-                DisplayFinalScore();
                 SwapRoles();
             }
 
+            if (currentRound >= maxRounds && currentRound <= 3)
+            {
+                currentRound = 0;
+                SwapRoles();
+            }
+
+
             Respawn();
+
             buttonGoalkeeper.SetActive(true);
             StartCoroutine(StartCountdown());
-
         }
     }
 
+    private bool CheckIfTied()
+    {
+        int totalGoalsPlayer1 = 0;
+        int totalGoalsPlayer2 = 0;
+
+        foreach (var player in PhotonNetwork.PlayerList)
+        {
+            int[] turnScores = (int[])player.CustomProperties["turnScores"];
+            if (player.ActorNumber == 1)
+            {
+                totalGoalsPlayer1 = turnScores.Count(score => score == 1);
+            }
+            else if (player.ActorNumber == 2)
+            {
+                totalGoalsPlayer2 = turnScores.Count(score => score == 1);
+            }
+        }
+
+        return totalGoalsPlayer1 == totalGoalsPlayer2;
+    }
     /*    void OnApplicationQuit()
         {
 
@@ -267,12 +331,13 @@ WebGLInput.captureAllKeyboardInput = false;
         {
             double animationStartTime = PhotonNetwork.Time + 0.3f;
 
-            localPlayerObject.GetComponent<PlayerSetup>().GetComponent<PhotonView>().RPC("TriggerPenaltyKickAnimation", RpcTarget.AllBufferedViaServer, playerChoice, opponentChoice, animationStartTime);
+            localPlayerObject.GetComponent<PlayerSetup>().GetComponent<PhotonView>().RPC("TriggerPenaltyKickAnimation", RpcTarget.AllViaServer, playerChoice, opponentChoice, animationStartTime);
         }
     }
 
     void UpdateScore(int result, int round)
     {
+        print(round);
         foreach (var player in PhotonNetwork.PlayerList)
         {
             var playerSetup = player.TagObject as PlayerSetup;
@@ -283,6 +348,7 @@ WebGLInput.captureAllKeyboardInput = false;
                 player.SetCustomProperties(new Hashtable { { "turnScores", turnScores } });
             }
         }
+        print("run oke");
         scoreboardManager.GetComponent<ScoreboardManager>().CallUpdateScores();
     }
 
@@ -302,52 +368,31 @@ WebGLInput.captureAllKeyboardInput = false;
     }
 
 
-
-    void DisplayFinalScore()
-    {
-        foreach (var player in PhotonNetwork.PlayerList)
-        {
-            int[] turnScores = (int[])player.CustomProperties["turnScores"];
-
-            var playerSetup = player.TagObject as PlayerSetup;
-            if (playerSetup != null)
-            {
-                Debug.Log($"{player.NickName} turn scores: {string.Join(", ", turnScores)}");
-            }
-        }
-    }
-
-
-
-
-
     // Determine winner after all rounds are complete
     private void DetermineWinnerAndSendAddress()
     {
         winnerAddress = string.Empty;
         int maxGoals = int.MinValue;
         Player winner = null;
+        int[] result = new int[2];
         foreach (var player in PhotonNetwork.PlayerList)
         {
             int[] turnScores = (int[])player.CustomProperties["turnScores"];
             int playerGoals = turnScores.Count(score => score == 1);
-
+            print(turnScores);
             if (playerGoals > maxGoals)
             {
                 maxGoals = playerGoals;
                 winnerAddress = (string)player.CustomProperties["userAddress"];
                 winner = player;
             }
+            result[player.ActorNumber] = playerGoals;
         }
 
 
-
-        print(winnerAddress);
         endGameScreen.SetActive(true);
-        endGameScreen.GetComponent<SendDataToReact>().UpdateScore(winner);
+        endGameScreen.GetComponent<SendDataToReact>().UpdateScore(winner, result);
         endGameScreen.GetComponent<SendDataToReact>().SendMessageToReact();
-        //((int[])PhotonNetwork.PlayerList[0].CustomProperties["turnScores"]).Count(score => score == 1),
-        //((int[])PhotonNetwork.PlayerList[1].CustomProperties["turnScores"]).Count(score => score == 1));
 
         /*        foreach (var player in PhotonNetwork.PlayerList)
                 {

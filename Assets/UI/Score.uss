@@ -24,9 +24,9 @@
 }
 
 .turn {
-    width: 16px;
-    height: 16px;
+    width: 12px;
+    height: 12px;
     border-radius: 50%;
     background-color: white;
-    margin-right: 10px;
+    margin-right: 4px;
 }

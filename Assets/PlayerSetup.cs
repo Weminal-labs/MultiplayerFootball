@@ -20,6 +20,7 @@ public class PlayerSetup : MonoBehaviourPun
     public GameObject ui;
 
 
+
     void Start()
     {
         animator = GetComponent<Animator>();
@@ -35,12 +36,12 @@ public class PlayerSetup : MonoBehaviourPun
 
     }
 
+
     public void isLocalPlayer()
     {
         playerTag.SetActive(false);
         //camera.SetActive(true);
         //ui.SetActive(true);
-        Debug.Log(GetRole());
     }
 
     [PunRPC]
@@ -50,11 +51,19 @@ public class PlayerSetup : MonoBehaviourPun
         nicknameText.text = nickname;
     }
 
+
+
     [PunRPC]
     public void SetRole(int _role)
     {
         role = _role;
         PlayIdleAnimation();
+    }
+
+    [PunRPC]
+    public void SetSkin(int _skin)
+    {
+        skin[_skin].SetActive(true);
     }
 
     private void PlayIdleAnimation()
@@ -84,10 +93,12 @@ public class PlayerSetup : MonoBehaviourPun
     private IEnumerator SyncAnimation(int chooseNumber, int opponentChoice, double startTime)
     {
         double timeToWait = startTime - PhotonNetwork.Time;
-        if (timeToWait > 0)
-        {
-            yield return new WaitForSeconds((float)timeToWait);
-        }
+
+        // Add a small buffer to account for network delays
+        timeToWait = Mathf.Max(0, (float)timeToWait);
+
+        // Wait for the calculated time before starting the animation
+        yield return new WaitForSeconds((float)timeToWait);
 
         if (animator != null)
         {

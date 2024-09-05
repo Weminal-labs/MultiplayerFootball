@@ -15,8 +15,6 @@
                     <ui:VisualElement name="player1-turn1" class="turn" />
                     <ui:VisualElement name="player1-turn2" class="turn" />
                     <ui:VisualElement name="player1-turn3" class="turn" />
-                    <ui:VisualElement name="player1-turn4" class="turn" />
-                    <ui:VisualElement name="player1-turn5" class="turn" />
                 </ui:VisualElement>
             </ui:VisualElement>
             <ui:VisualElement class="player-scores" style="flex-direction: column;">
@@ -25,8 +23,6 @@
                     <ui:VisualElement name="player2-turn1" class="turn" />
                     <ui:VisualElement name="player2-turn2" class="turn" />
                     <ui:VisualElement name="player2-turn3" class="turn" />
-                    <ui:VisualElement name="player2-turn4" class="turn" />
-                    <ui:VisualElement name="player2-turn5" class="turn" />
                 </ui:VisualElement>
             </ui:VisualElement>
         </ui:VisualElement>
